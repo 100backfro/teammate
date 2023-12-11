@@ -1,26 +1,14 @@
 package com.api.backend.member.data.type;
 
-import com.api.backend.global.type.converter.legacy.LegacyCodeCommonType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public enum Authority implements LegacyCodeCommonType {
-  USER("0", "USER"),
-  ADMIN("1", "ADMIN");
+@Getter
+@AllArgsConstructor
+public enum Authority {
+  USER("사용자"),
+  ADMIN("관리자");
 
-  private final String code;
   private final String description;
 
-  Authority(String code, String description) {
-    this.code = code;
-    this.description = description;
-  }
-
-  @Override
-  public String getLegacyCode() {
-    return this.code;
-  }
-
-  @Override
-  public String getDesc() {
-    return this.description;
-  }
   }

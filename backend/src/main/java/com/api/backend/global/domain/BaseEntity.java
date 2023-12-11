@@ -1,6 +1,6 @@
 package com.api.backend.global.domain;
 
-
+import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
@@ -14,11 +14,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-  @Column(nullable = false,updatable = false)
+  @Column(nullable = false, updatable = false)
   @CreatedDate
-  private String createDt;
+  private LocalDateTime createDt;
 
-  @Column(nullable = false,updatable = false)
+  @Column(nullable = false)
   @LastModifiedDate
-  private String updateDt;
+  private LocalDateTime updateDt;
+
 }

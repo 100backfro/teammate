@@ -1,52 +1,55 @@
 package com.api.backend.documents.data.entity;
 
 import com.api.backend.comment.data.entity.Comment;
-import com.api.backend.global.domain.BaseEntity;
-import com.api.backend.team.data.entity.Team;
-import com.vladmihalcea.hibernate.type.json.JsonType;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Builder
-@TypeDef(name = "json", typeClass = JsonType.class)
-public class Documents extends BaseEntity {
+@Document(collection = "Documents")
+@AllArgsConstructor
+@NoArgsConstructor
+public class Documents {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long documentsId;
+  private String id;
+
+  @Field(name = "title")
   private String title;
+
+  @Field(name = "content")
   private String content;
+
+  @Field(name = "writer_id")
   private Long writerId;
+
+  @Field(name = "modifier_id")
   private Long modifierId;
-  @Type(type = "json")
-  @Column(columnDefinition = "longtext")
-  private HashMap<Long, String> documentsParticipantMap = new HashMap<>();
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "teamId")
-  private Team team;
+  @Field(name = "team_id")
+  private Long teamId;
 
-  @OneToMany(mappedBy = "documents")
-  private List<Comment> comments = new ArrayList<>();
+  @DocumentReference
+  @Field(name = "comment_ids")
+  @Builder.Default
+  private List<Comment> commentIds = new ArrayList<>();;
+
+  @CreatedDate
+  @Field(name = "created_dt")
+  private LocalDateTime createdDt;
+  @LastModifiedDate
+  @Field(name = "updated_dt")
+  private LocalDateTime updatedDt;
 
 }

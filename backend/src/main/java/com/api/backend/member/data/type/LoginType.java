@@ -1,31 +1,17 @@
 package com.api.backend.member.data.type;
 
 
-import com.api.backend.global.type.converter.legacy.LegacyCodeCommonType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-public enum LoginType implements LegacyCodeCommonType {
-  KAKAO("0","KAKAO"),
-  NAVER("1","NAVER"),
-  GOOGLE("2", "GOOGLE"),
-  TEAMMATE("3","TEAMMATE");
+@AllArgsConstructor
+public enum LoginType {
+  KAKAO("카카오"),
+  NAVER("네이버"),
+  GOOGLE("구글"),
+  TEAMMATE("팀메이트");
 
-  private final String code;
   private final String description;
 
-  LoginType(String code, String description) {
-    this.code = code;
-    this.description = description;
-  }
-
-  @Override
-  public String getLegacyCode() {
-    return this.code;
-  }
-
-  @Override
-  public String getDesc() {
-    return this.description;
-  }
 }

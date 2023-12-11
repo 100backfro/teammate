@@ -1,26 +1,13 @@
 package com.api.backend.team.data.type;
 
-import com.api.backend.global.type.converter.legacy.LegacyCodeCommonType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public enum TeamRole implements LegacyCodeCommonType {
-  READER("0","READER"),
-  MATE("1","MATE");
+@Getter
+@AllArgsConstructor
+public enum TeamRole {
+  READER("리더"),
+  MATE("메이트");
 
-  private final String code;
   private final String description;
-
-  TeamRole(String code, String description) {
-    this.code = code;
-    this.description = description;
-  }
-
-  @Override
-  public String getLegacyCode() {
-    return this.code;
-  }
-
-  @Override
-  public String getDesc() {
-    return this.description;
-  }
 }

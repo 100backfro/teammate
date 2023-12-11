@@ -1,37 +1,39 @@
 package com.api.backend.comment.data.entity;
 
-import com.api.backend.global.domain.BaseEntity;
-import com.api.backend.documents.data.entity.Documents;
-import com.api.backend.member.data.entity.Member;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import java.time.LocalDateTime;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Builder
-public class Comment extends BaseEntity {
-
+@Document(collection = "Comment")
+@AllArgsConstructor
+@NoArgsConstructor
+public class Comment {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long commentId;
+  private String id;
+
+  @Field(name = "writerId")
+  private Long writerId;
+
+  @Field(name = "content")
   private String content;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "documentsId")
-  private Documents documents;
+  @Field(name = "team_id")
+  private Long teamId;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "memberId")
-  private Member member;
+  @CreatedDate
+  @Field(name = "created_dt")
+  private LocalDateTime createdDt;
+
+  @LastModifiedDate
+  @Field(name = "updated_dt")
+  private LocalDateTime updatedDt;
 }

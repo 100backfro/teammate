@@ -1,30 +1,17 @@
 package com.api.backend.notification.data.type;
 
-import com.api.backend.global.type.converter.legacy.LegacyCodeCommonType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-public enum Type implements LegacyCodeCommonType {
-  DOCUMENTS("0","DOCUMENTS"),
-  COMMENT("1","COMMENT"),
-  MENTION("2", "MENTION"),
-  INVITE("3","INVITE");
+@AllArgsConstructor
+public enum Type {
+  DOCUMENTS("문서"),
+  COMMENT("댓글"),
+  KICKOUT("강퇴"),
+  MENTION("멘션"),
+  INVITE("초대");
 
-  private final String code;
   private final String description;
 
-  Type(String code, String description) {
-    this.code = code;
-    this.description = description;
-  }
-
-  @Override
-  public String getLegacyCode() {
-    return this.code;
-  }
-
-  @Override
-  public String getDesc() {
-    return this.description;
-  }
 }
