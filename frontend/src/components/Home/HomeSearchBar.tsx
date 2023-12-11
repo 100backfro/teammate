@@ -4,11 +4,15 @@ import styled from "styled-components";
 import searchImg from "../../assets/search.png";
 
 const SearchBarContainer = styled.div`
-  position: relative;
+  position: absolute;
+  top: 200px; /* 조절할 원하는 위치로 설정 */
+  /* 조절할 원하는 위치로 설정 */
   display: flex;
   align-items: center;
   margin: 10px;
+  width: 1000px;
   height: 40px;
+  z-index: 1000;
 
   input {
     padding: 8px;
