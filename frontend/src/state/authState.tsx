@@ -67,9 +67,11 @@ export const selectedTeamSizeState = atom({
 
 // Team List State
 export interface Team {
+  id: string;
   name: string;
   size: string;
   image: string | null;
+  leaderId: string | null;
 }
 
 export const teamListState = atom<Team[]>({
@@ -102,8 +104,7 @@ export interface User {
 
 export const userState = atom<User | null>({
   key: "userState",
-  default: null,
-
+  default: { id: "", name: "" }, // 기본값 설정
   effects_UNSTABLE: [
     ({ onSet }) => {
       onSet((newValue) => {

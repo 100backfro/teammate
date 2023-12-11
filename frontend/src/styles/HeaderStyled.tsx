@@ -5,7 +5,14 @@ import { Link } from "react-router-dom";
 export const HeaderTag = styled.header`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  align-items: center;
+  padding: 10px;
+`;
+
+export const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 // 헤더 로고 이미지
