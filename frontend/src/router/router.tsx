@@ -6,9 +6,12 @@ import SignUp from "../components/Join/SignUp";
 import Index from "../views/Index";
 import KakaoLogin from "../components/Login/KakaoLogin";
 import Home from "../components/Home/HomeContent";
-import Mypage from "../components/Profile/Mypage";
+import Mypage from "../components/Mypage/Mypage";
 import HomeView from "../views/HomeView";
 import TeamCreateView from "../views/TeamCreateView";
+import TeamDetail from "../components/TeamPage/TeamDetail";
+import TeamLeader from "../components/ProfilePage/TeamLeader";
+import TeamMembers from "../components/ProfilePage/TeamMembers";
 
 const Router = () => {
   return (
@@ -22,6 +25,9 @@ const Router = () => {
       <Route path="/homeview" element={<HomeView />} />
       <Route path="/mypage" element={<Mypage />} />
       <Route path="/teamcreateview" element={<TeamCreateView />} />
+      <Route path="/team/:teamId" element={<TeamDetail />} />
+      <Route path="/teamleader" element={<TeamLeader />} />
+      <Route path="/teammembers" element={<TeamMembers />} />
       <Route />
     </Routes>
   );

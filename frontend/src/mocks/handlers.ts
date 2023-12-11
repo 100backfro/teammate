@@ -53,9 +53,6 @@ export const handlers = [
       ]),
     );
   }),
-  rest.post("/sign-up", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ message: "가입 성공" }));
-  }),
   rest.get("/vite.svg", (req, res, ctx) => {
     return res(
       ctx.status(200),
