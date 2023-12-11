@@ -1,6 +1,7 @@
 import React, { useState, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import * as Styled from "./TeamLeaderStyled";
+import { CenteredContainer, TeamLeaderModal } from "./TeamLeaderStyled";
+import profileImg from "../../assets/profileImg.png";
 
 export default function TeamLeader() {
   const navigate = useNavigate();
@@ -23,6 +24,9 @@ export default function TeamLeader() {
   const [editingTeamLeader, setEditingTeamLeader] = useState(false);
   const [newLeaderSelect, setNewLeaderSelect] = useState<string | null>(null);
   const [kickReason, setKickReason] = useState("");
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -111,140 +115,185 @@ export default function TeamLeader() {
     setNewLeaderSelect(null);
   };
 
-  const handleDeleteTeamAccount = () => {
-    // 팀 계정 삭제 로직 추가 (예: API 호출 등)
+  const openPasswordModal = () => {
+    setIsPasswordModalOpen(true);
+  };
 
+  const closePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+  };
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  const handleConfirmDelete = () => {
+    // 여기에 비밀번호 확인 및 삭제 로직 추가
+    console.log("비밀번호 확인 및 삭제 로직을 구현하세요.");
+    if (!passwordInput) {
+      console.log("비밀번호를 입력하세요.");
+      return;
+    }
     // 삭제가 성공했다고 가정하고 homeview로 이동
     navigate("/homeview");
   };
 
   return (
-    <div>
-      <h1 style={{ textAlign: "center" }}>팀 프로필</h1>
-
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <>
+      <CenteredContainer>
         <div>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            style={{ display: "none" }}
-            id="imageInput"
-          />
-          <label htmlFor="imageInput">
-            <img
-              src={selectedImage || "path/to/default/image.jpg"}
-              alt="Team Logo"
-              style={{ width: "100px", height: "100px", cursor: "pointer" }}
+          <h1 style={{ textAlign: "center" }}>팀 프로필</h1>
+
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+                id="imageInput"
+              />
+              <label htmlFor="imageInput">
+                <img
+                  src={selectedImage || profileImg}
+                  alt="Team Logo"
+                  style={{ width: "100px", height: "100px", cursor: "pointer" }}
+                />
+              </label>
+            </div>
+
+            <div>
+              <span title="teamNameChange">
+                {editingTeamName ? (
+                  <input
+                    type="text"
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                  />
+                ) : (
+                  teamName
+                )}
+              </span>
+              {editingTeamName ? (
+                <>
+                  <button onClick={confirmEditTeamName}>확인</button>
+                  <button onClick={cancelEditTeamName}>취소</button>
+                </>
+              ) : (
+                <button onClick={handleEditTeamName}>변경하기</button>
+              )}
+              <br />
+              {editingTeamLeader ? (
+                <div>
+                  <select
+                    title="select"
+                    value={newLeaderSelect || ""}
+                    onChange={(e) => setNewLeaderSelect(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      선택하세요
+                    </option>
+                    {teamMembers.map((member, index) => (
+                      <option key={index} value={member}>
+                        {member}
+                      </option>
+                    ))}
+                  </select>
+                  <button onClick={confirmEditTeamLeader}>확인</button>
+                  <button onClick={cancelEditTeamLeader}>취소</button>
+                </div>
+              ) : (
+                <div>
+                  <span>{teamLeader}</span>
+                  <button onClick={handleEditTeamLeader}>변경하기</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <p style={{ fontWeight: "bold", marginBottom: "5px" }}>팀원</p>
+            <input
+              type="text"
+              placeholder="검색"
+              value={searchTeam}
+              onChange={(e) => setSearchTeam(e.target.value)}
             />
-          </label>
-        </div>
-
-        <div>
-          <input
-            title="teamNameChange"
-            type="text"
-            value={editingTeamName ? newTeamName : teamName}
-            onChange={(e) => setNewTeamName(e.target.value)}
-            disabled={!editingTeamName}
-          />
-          {editingTeamName ? (
-            <>
-              <button onClick={confirmEditTeamName}>확인</button>
-              <button onClick={cancelEditTeamName}>취소</button>
-            </>
-          ) : (
-            <button onClick={handleEditTeamName}>변경하기</button>
-          )}
-          <br />
-          <p style={{ fontWeight: "bold", marginBottom: "5px" }}>팀 리더</p>
-          {editingTeamLeader ? (
-            <div>
-              <select
-                title="select"
-                value={newLeaderSelect || ""}
-                onChange={(e) => setNewLeaderSelect(e.target.value)}
-              >
-                <option value="" disabled>
-                  선택하세요
-                </option>
-                {teamMembers.map((member, index) => (
-                  <option key={index} value={member}>
-                    {member}
-                  </option>
-                ))}
-              </select>
-              <button onClick={confirmEditTeamLeader}>확인</button>
-              <button onClick={cancelEditTeamLeader}>취소</button>
+            <div
+              style={{
+                maxHeight: "200px", // Set your desired max height
+                overflowY: "auto",
+              }}
+            >
+              {filteredTeamMembers.map((member, index) => (
+                <div
+                  key={index}
+                  style={{ display: "flex", marginBottom: "10px" }}
+                >
+                  <input
+                    title="disband"
+                    type="text"
+                    value={member}
+                    onChange={(e) => handleTeamMemberChange(index, e)}
+                  />
+                  <button onClick={() => handleRemoveMember(index)}>
+                    강퇴
+                  </button>
+                </div>
+              ))}
             </div>
-          ) : (
-            <div>
-              <span>{teamLeader}</span>
-              <button onClick={handleEditTeamLeader}>변경하기</button>
+          </div>
+          {showConfirmation && (
+            <div
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                padding: "20px",
+                background: "white",
+                zIndex: 999,
+              }}
+            >
+              <p>강퇴하시겠습니까?</p>
+              {memberIndexToRemove !== null && (
+                <>
+                  <p>강퇴 사유를 입력하세요:</p>
+                  <input
+                    title="reason"
+                    type="text"
+                    value={kickReason}
+                    onChange={(e) => setKickReason(e.target.value)}
+                  />
+                </>
+              )}
+              <button onClick={confirmRemoveMember}>확인</button>
+              <button onClick={cancelRemoveMember}>취소</button>
             </div>
           )}
-        </div>
-      </div>
 
-      <div>
-        <p style={{ fontWeight: "bold", marginBottom: "5px" }}>팀원</p>
-        <input
-          type="text"
-          placeholder="검색"
-          value={searchTeam}
-          onChange={(e) => setSearchTeam(e.target.value)}
-        />
-        <div
-          style={{
-            maxHeight: "200px", // Set your desired max height
-            overflowY: "auto",
-          }}
-        >
-          {filteredTeamMembers.map((member, index) => (
-            <div key={index} style={{ display: "flex", marginBottom: "10px" }}>
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <button onClick={openPasswordModal}>팀 계정 삭제하기</button>
+          </div>
+          <TeamLeaderModal
+            isOpen={isPasswordModalOpen}
+            onRequestClose={closePasswordModal}
+            contentLabel="Password Modal"
+          >
+            <div className="modal-content">
+              <div>팀 계정을 삭제하시겠습니까?</div>
+              <p>비밀번호를 입력하세요:</p>
               <input
-                title="disband"
-                type="text"
-                value={member}
-                onChange={(e) => handleTeamMemberChange(index, e)}
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
               />
-              <button onClick={() => handleRemoveMember(index)}>강퇴</button>
+              <button onClick={handleConfirmDelete}>확인</button>
+              <button onClick={closePasswordModal}>취소</button>
             </div>
-          ))}
+          </TeamLeaderModal>
         </div>
-      </div>
-      {showConfirmation && (
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            padding: "20px",
-            background: "white",
-            zIndex: 999,
-          }}
-        >
-          <p>강퇴하시겠습니까?</p>
-          {memberIndexToRemove !== null && (
-            <>
-              <p>강퇴 사유를 입력하세요:</p>
-              <input
-                title="reason"
-                type="text"
-                value={kickReason}
-                onChange={(e) => setKickReason(e.target.value)}
-              />
-            </>
-          )}
-          <button onClick={confirmRemoveMember}>확인</button>
-          <button onClick={cancelRemoveMember}>취소</button>
-        </div>
-      )}
-
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
-        <button onClick={handleDeleteTeamAccount}>팀 계정 삭제하기</button>
-      </div>
-    </div>
+      </CenteredContainer>
+    </>
   );
 }

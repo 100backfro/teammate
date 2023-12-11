@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import {
   teamNameState,
   selectedTeamSizeState,
   teamListState,
+  userState,
 } from "../../state/authState";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,25 +13,39 @@ import {
   StyledImagePreview,
   StyledErrorMessage,
   StyledHeading,
+  StyledLabel,
+  StyledInput,
+  ImageUploadContainer,
+  StyledButton,
 } from "./TeamInfoStyled";
+import profileImg from "../../assets/profileImg.png";
 
 export default function TeamInfo() {
   const [teamName, setTeamName] = useRecoilState(teamNameState);
   const [selectedTeamSize, setSelectedTeamSize] = useRecoilState(
     selectedTeamSizeState,
   );
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [teamList, setTeamList] = useRecoilState(teamListState);
-  const [error, setError] = useState<string | null>(null); // 에러 상태 추가
+  const [error, setError] = useState<string | null>(null);
+  const user = useRecoilValue(userState);
   const navigate = useNavigate();
 
-  // 페이지 로드 시 초기값 설정
-  useEffect(() => {
-    setTeamName("");
-    setSelectedTeamSize("");
-    setSelectedImage(null);
-    setError(null);
-  }, []);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      // 이미지 파일을 선택한 경우
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onload = () => {
+        const result = reader.result as string;
+        setSelectedImage(result);
+      };
+    }
+  };
 
   const generateTeamId = () => {
     return `team_${Date.now()}`;
@@ -55,12 +70,14 @@ export default function TeamInfo() {
     }
 
     setError(null);
+
     const newTeamId = generateTeamId();
     const newTeam = {
       id: newTeamId,
       name: teamName,
       size: selectedTeamSize,
       image: selectedImage,
+      leaderId: user?.id || null,
     };
     setTeamList([...teamList, newTeam]);
 
@@ -68,30 +85,34 @@ export default function TeamInfo() {
     navigate("/homeview");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileInput = e.target;
+    const file = fileInput.files && fileInput.files[0];
 
     if (file) {
-      // 이미지 파일을 선택한 경우
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      reader.onload = () => {
-        const result = reader.result as string;
-        setSelectedImage(result);
-      };
+      setSelectedFileName(file.name);
+      handleImageUpload(e);
     }
   };
+
+  // 페이지 로드 시 초기값 설정
+  useEffect(() => {
+    setTeamName("");
+    setSelectedTeamSize("");
+    setSelectedImage(null);
+    setError(null);
+  }, []);
 
   return (
     <StyledContainer>
       <StyledHeading>팀 생성</StyledHeading>
       <StyledFormItem>
-        <label htmlFor="teamName">팀 이름</label>
-        <input
+        <StyledLabel htmlFor="teamName">팀 이름</StyledLabel>
+        <StyledInput
           type="text"
           id="teamName"
           value={teamName}
+          placeholder="팀 이름"
           onChange={(e) => {
             setTeamName(e.target.value);
             setError(null); // 팀 이름이 변경될 때 에러 상태 초기화
@@ -103,8 +124,9 @@ export default function TeamInfo() {
         )}
       </StyledFormItem>
       <StyledFormItem>
-        <label htmlFor="teamSize">인원 수</label>
+        <StyledLabel htmlFor="teamSize">인원 수</StyledLabel>
         <select
+          title="teamSize"
           id="teamSize"
           value={selectedTeamSize}
           onChange={(e) => {
@@ -113,27 +135,29 @@ export default function TeamInfo() {
           }}
         >
           <option value="" disabled>
-            선택하세요
+            인원 수
           </option>
           <option value="1-9">1~9명</option>
           <option value="10-99">10~99명</option>
           <option value="100+">100명 이상</option>
         </select>
-        <input
-          placeholder="이미지 업로드"
-          type="file"
-          id="imageUpload"
-          accept="image/*"
-          onChange={handleImageUpload}
-        />
+        <ImageUploadContainer>
+          <img
+            src={selectedImage || profileImg}
+            alt="Selected"
+            onClick={() => document.getElementById("imageUpload")?.click()}
+          />
+          <input
+            title="imgupload"
+            type="file"
+            id="imageUpload"
+            accept="image/*"
+            onChange={handleFileInputChange}
+          />
+        </ImageUploadContainer>
       </StyledFormItem>
-      {selectedImage && (
-        <StyledImagePreview>
-          <img src={selectedImage} alt="Selected" />
-        </StyledImagePreview>
-      )}
       <StyledFormItem>
-        <button onClick={handleCreateTeam}>생성하기</button>
+        <StyledButton onClick={handleCreateTeam}>생성하기</StyledButton>
         {error && <StyledErrorMessage>{error}</StyledErrorMessage>}
       </StyledFormItem>
     </StyledContainer>
