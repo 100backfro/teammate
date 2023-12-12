@@ -4,6 +4,34 @@ import { useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { teamListState, userState } from "../../state/authState";
 
+const TeamDetail = () => {
+  const { teamId } = useParams();
+  const teamList = useRecoilValue(teamListState);
+  const user = useRecoilValue(userState);
+  const team = teamList.find((team) => team.id === teamId);
+
+  if (!team) {
+    return <div>팀을 찾을 수 없습니다.</div>;
+  }
+
+  const isTeamLeader = user && team.leaderId === user.id;
+
+  return (
+    <TeamDetailContainer>
+      {/* <TeamName>{team.name}</TeamName> */}
+
+      <BoxContainer>
+        <EmptyBox>공유문서리스트</EmptyBox>
+        <EmptyBox>캘린더</EmptyBox>
+      </BoxContainer>
+
+      {/* {team.image && <Image src={team.image} alt={`${team.name} 이미지`} />} */}
+    </TeamDetailContainer>
+  );
+};
+
+export default TeamDetail;
+
 const TeamDetailContainer = styled.div`
   text-align: center;
 `;
@@ -34,31 +62,3 @@ const Image = styled.img`
   max-height: 200px;
   margin-top: 20px;
 `;
-
-const TeamDetail = () => {
-  const { teamId } = useParams();
-  const teamList = useRecoilValue(teamListState);
-  const user = useRecoilValue(userState);
-  const team = teamList.find((team) => team.id === teamId);
-
-  if (!team) {
-    return <div>팀을 찾을 수 없습니다.</div>;
-  }
-
-  const isTeamLeader = user && team.leaderId === user.id;
-
-  return (
-    <TeamDetailContainer>
-      {/* <TeamName>{team.name}</TeamName> */}
-
-      <BoxContainer>
-        <EmptyBox>공유문서리스트</EmptyBox>
-        <EmptyBox>캘린더</EmptyBox>
-      </BoxContainer>
-
-      {/* {team.image && <Image src={team.image} alt={`${team.name} 이미지`} />} */}
-    </TeamDetailContainer>
-  );
-};
-
-export default TeamDetail;
