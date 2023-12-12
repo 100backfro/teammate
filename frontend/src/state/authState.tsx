@@ -1,12 +1,29 @@
 import { atom, useRecoilState, selector } from "recoil";
 import { useEffect } from "react";
 
-// Authentication State
 export const isAuthenticatedState = atom({
-  key: "isAuthenticatedState",
-  default: Boolean(localStorage.getItem("accessToken")),
+  key: "isAuthenticated",
+  default: false,
 });
 
+//토큰을 저장
+export const accessTokenState = atom({
+  key: "accessToken",
+  default: "",
+});
+
+export const refreshTokenState = atom({
+  key: "refreshToken",
+  default: "",
+});
+
+export const saveRefreshToken = (token: string | null) => {
+  if (token) {
+    localStorage.setItem("refreshToken", token);
+  } else {
+    localStorage.removeItem("refreshToken");
+  }
+};
 // Access Token Functions
 export const saveAccessToken = (token: string | null) => {
   if (token) {
@@ -72,6 +89,7 @@ export interface Team {
   size: string;
   image: string | null;
   leaderId: string | null;
+  nickname?: string | null;
 }
 
 export const teamListState = atom<Team[]>({
@@ -133,3 +151,11 @@ export const useUser = () => {
 };
 
 // MyPage State
+export const selectedTeamInfoState = atom({
+  key: "selectedTeamInfoState",
+  default: {
+    name: "",
+    image: "",
+    nickname: "",
+  },
+});

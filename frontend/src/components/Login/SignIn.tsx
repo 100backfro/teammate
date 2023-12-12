@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { StyledContainer, StyledFormItem } from "./SignInStyled";
 import { useRecoilState } from "recoil";
 import {
   isAuthenticatedState,
+  accessTokenState,
+  refreshTokenState,
   saveAccessToken,
+  saveRefreshToken,
   useUser,
 } from "../../state/authState";
 
@@ -15,18 +18,14 @@ const SignIn = () => {
   const [error, setError] = useState("");
   const [isAuthenticated, setIsAuthenticated] =
     useRecoilState(isAuthenticatedState);
+  const [accessToken, setAccessToken] = useRecoilState(accessTokenState);
+  const [refreshToken, setRefreshToken] = useRecoilState(refreshTokenState);
   const { setUser } = useUser();
   const navigate = useNavigate();
 
-  // Mock users data for testing
-  const mockUsers = [
-    { id: "user1@example.com", password: "password1", name: "김팀장" },
-    { id: "user2@example.com", password: "password2", name: "이팀원" },
-  ];
-
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    saveAccessToken("");
+    saveRefreshToken("");
     navigate("/signin");
     setIsAuthenticated(false);
   };
@@ -48,22 +47,49 @@ const SignIn = () => {
         setError("비밀번호는 최소 8자 이상이어야 합니다.");
         return;
       }
-      const user = mockUsers.find(
-        (u) => u.id === email && u.password === password,
+
+      const response = await axios.post(
+        "http://localhost:8080/sign-in",
+        {
+          email: email,
+          password: password,
+        },
+        {
+          withCredentials: true,
+        },
       );
 
-      if (user) {
-        const accessToken = "가짜AccessToken";
-        saveAccessToken(accessToken);
-        setIsAuthenticated(true);
+      const newAccessToken = response.data.accessToken;
+      const newRefreshToken = response.data.refreshToken;
 
-        setUser({ id: email, name: user.name });
+      if (newAccessToken && newRefreshToken) {
+        // 토큰 저장
+        saveAccessToken(newAccessToken);
+        saveRefreshToken(newRefreshToken);
+
+        // Recoil 상태 업데이트
+        setAccessToken(newAccessToken);
+        setRefreshToken(newRefreshToken);
+
+        setIsAuthenticated(true);
+        setUser({ id: email, name: response.data.name });
         navigate("/homeview");
       } else {
-        setError("올바른 이메일 또는 비밀번호를 입력하세요.");
+        setError("토큰이 올바르게 전달되지 않았습니다.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Sign In Error:", error);
+
+      if (axios.isAxiosError(error)) {
+        console.error("Axios Error Response:", error.response);
+      }
+
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.status === 401) {
+        setError("올바른 이메일 또는 비밀번호를 입력하세요.");
+      } else {
+        setError("로그인 중 오류가 발생했습니다.");
+      }
     }
   };
 
