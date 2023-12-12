@@ -1,4 +1,10 @@
-import React, { useEffect, useCallback } from "react";
+import React, {
+  useEffect,
+  useCallback,
+  useRef,
+  useState,
+  FormEvent,
+} from "react";
 import {
   Editor,
   EditorState,
@@ -6,14 +12,17 @@ import {
   DraftEditorCommand,
   convertToRaw,
   convertFromRaw,
+  ContentState,
+  EditorChangeType,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 import styled from "styled-components";
 import "./TextEditor.css";
 import TextTitle from "./TextTitle";
+import * as StompJs from "@stomp/stompjs";
 
 const StyledTexteditor = styled.div`
-  width: 40rem;
+  width: 41rem;
 `;
 
 const StyledButton = styled.button`
@@ -30,25 +39,29 @@ const SaveButton = styled.button`
 `;
 
 const ButtonContainer = styled.div`
-  width: 40rem;
+  width: 41rem;
 `;
+interface TextEditorProps {
+  id: string;
+}
 
-const TextEditor: React.FC = () => {
+const TextEditor: React.FC<TextEditorProps> = ({ id }) => {
   const [currentText, setCurrentText] = React.useState<string>("");
+  const [title, setTitle] = React.useState<string>("");
 
-  const TEXT_EDITOR_ITEM = "draft-js-example-item";
+  const docsIdx = id;
+  console.log(docsIdx);
+  // const docsIdx = "1aac3642-ef31-479a-8cf4-cfd93bb39e06";
 
-  const data = localStorage.getItem(TEXT_EDITOR_ITEM);
+  const data = "";
   const initialState = data
-    ? EditorState.createWithContent(convertFromRaw(JSON.parse(data)))
+    ? EditorState.createWithContent(convertFromRaw(data))
     : EditorState.createEmpty();
   const [editorState, setEditorState] =
     React.useState<EditorState>(initialState);
 
   const handleSave = useCallback(() => {
-    console.log("save");
     const data = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-    localStorage.setItem(TEXT_EDITOR_ITEM, data);
   }, [editorState]);
 
   const handleChange = (newEditorState: EditorState) => {
@@ -72,19 +85,8 @@ const TextEditor: React.FC = () => {
     return "not-handled";
   };
 
-  const handleTogggleClick = (e: React.MouseEvent, inlineStyle: string) => {
-    e.preventDefault();
-    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
-  };
-
-  const handleBlockClick = (e: React.MouseEvent, blockType: string) => {
-    e.preventDefault();
-    setEditorState(RichUtils.toggleBlockType(editorState, blockType));
-  };
-
   const onKeyUp = useCallback(
     (e: KeyboardEvent) => {
-      console.log("keyUp:", e);
       e.preventDefault();
       handleSave();
     },
@@ -103,87 +105,81 @@ const TextEditor: React.FC = () => {
     handleSave();
   }, [currentText]);
 
-  // const socket = new WebSocket('*websocket url*');
+  const client = useRef<StompJs.Client | null>(null);
 
-  // socket.addEventListener('open', (event: Event) => {
-  //   console.log('WebSocket connection opened', event);
-  // });
+  const connect = (docsIdx: string) => {
+    const trimmedDocsIdx = docsIdx;
 
-  // socket.addEventListener('message', (event: MessageEvent) => {
-  //   console.log(`Received message: ${event.data}`);
-  // });
+    if (trimmedDocsIdx && client.current) {
+      client.current.activate();
+    }
+  };
+  useEffect(() => {
+    client.current = new StompJs.Client({
+      brokerURL: "ws://localhost:8080/ws",
+    });
 
-  // socket.addEventListener('close', (event: CloseEvent) => {
-  //   console.log('WebSocket connection closed', event);
-  // });
+    const onConnect = (trimmedDocsIdx: string) => {
+      console.log("Connected to WebSocket with", trimmedDocsIdx);
+      const docsMessage = {
+        documentIdx: trimmedDocsIdx,
+      };
 
-  // function sendMessage() {
-  //   const messageInput = document.getElementById('messageInput') as HTMLInputElement | null;
+      client.current!.publish({
+        destination: "/app/chat.showDocs",
+        body: JSON.stringify(docsMessage),
+      });
 
-  //   if (messageInput) {
-  //     const message = messageInput.value;
+      client.current!.subscribe("/topic/public", (docs) => {
+        displayDocs(JSON.parse(docs.body));
+      });
+    };
 
-  //     // Send the message to the server
-  //     socket.send(message);
+    client.current.onConnect = () => {
+      const docsIdxInput = document.getElementById(
+        "docs-idx",
+      ) as HTMLInputElement;
+      onConnect(docsIdx);
+    };
 
-  //     // Clear the input field
-  //     messageInput.value = '';
-  //   }
-  // }
+    client.current.onStompError = onError;
+
+    return () => {
+      if (client.current) {
+        client.current.deactivate();
+      }
+    };
+  }, []);
+
+  const onError = (error: any) => {
+    console.error("Could not connect to WebSocket server:", error);
+  };
+
+  //
+  const displayDocs = (docs: Docs) => {
+    setTitle(docs.title);
+    console.log(docs.content);
+
+    // draft.js 내부 텍스트로 지정할 string형태의 데이터를 선언.
+    const contentText = docs.content;
+
+    // 문자열로부터 새로운 ContentState를 생성합니다.
+    const newContentState = ContentState.createFromText(contentText);
+
+    // 새로운 컨텐츠로 에디터 상태를 업데이트합니다.
+    setEditorState(EditorState.createWithContent(newContentState));
+
+    console.log("displaydocs");
+  };
+
+  useEffect(() => {
+    connect(docsIdx);
+  }, []);
 
   return (
     <StyledTexteditor className="texteditor">
-      <TextTitle />
-      <ButtonContainer>
-        <StyledButton onMouseDown={(e) => handleBlockClick(e, "header-one")}>
-          H1
-        </StyledButton>
-        <StyledButton onMouseDown={(e) => handleBlockClick(e, "header-two")}>
-          H2
-        </StyledButton>
-        <StyledButton onMouseDown={(e) => handleBlockClick(e, "header-three")}>
-          H3
-        </StyledButton>
-        <StyledButton onMouseDown={(e) => handleBlockClick(e, "unstyled")}>
-          Normal
-        </StyledButton>
-        <StyledButton onMouseDown={(e) => handleTogggleClick(e, "BOLD")}>
-          bold
-        </StyledButton>
-        <StyledButton onMouseDown={(e) => handleTogggleClick(e, "UNDERLINE")}>
-          underline
-        </StyledButton>
-        <StyledButton onMouseDown={(e) => handleTogggleClick(e, "ITALIC")}>
-          italic
-        </StyledButton>
-        <StyledButton
-          onMouseDown={(e) => handleTogggleClick(e, "STRIKETHROUGH")}
-        >
-          strikethrough
-        </StyledButton>
-        <StyledButton
-          onMouseDown={(e) => handleBlockClick(e, "ordered-list-item")}
-        >
-          Ordered List
-        </StyledButton>
-        <StyledButton
-          onMouseDown={(e) => handleBlockClick(e, "unordered-list-item")}
-        >
-          Unordered List
-        </StyledButton>
-        <StyledButton
-          disabled={editorState.getUndoStack().size <= 0}
-          onMouseDown={() => setEditorState(EditorState.undo(editorState))}
-        >
-          undo
-        </StyledButton>
-        <StyledButton
-          disabled={editorState.getRedoStack().size <= 0}
-          onMouseDown={() => setEditorState(EditorState.redo(editorState))}
-        >
-          redo
-        </StyledButton>
-      </ButtonContainer>
+      <TextTitle titleProps={title} />
+      <ButtonContainer></ButtonContainer>
       <Editor
         editorState={editorState}
         onChange={(newEditorState) => {
@@ -192,14 +188,7 @@ const TextEditor: React.FC = () => {
         }}
         handleKeyCommand={handleKeyCommand}
       />
-      <SaveButton
-        className="save"
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-      >
+      <SaveButton className="save" type="button" onClick={(e) => {}}>
         save
       </SaveButton>
     </StyledTexteditor>
