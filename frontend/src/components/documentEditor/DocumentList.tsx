@@ -245,7 +245,6 @@ const DocumentContainer = styled.div`
   flex-wrap: wrap;
   margin-bottom: 20px;
   padding-top: 30px;
-
 `;
 
 const DocumentItem = styled.div`
@@ -256,14 +255,11 @@ const DocumentItem = styled.div`
   margin: 8px 0;
   padding: 10px;
   border-radius: 12px;
-  box-shadow: 8px 8px 12px 0px rgb(163, 204, 163);
   transition:
     transform 0.3s ease,
-    box-shadow 0.3s ease;
 
   &:hover {
     transform: scale(1.03);
-    box-shadow: 10px 10px 15px 0px rgb(163, 204, 163);
   }
 `;
 
@@ -297,7 +293,6 @@ const Container = styled.section`
   display: flex;
   flex-direction: column;
   padding-top: 50px;
-
 `;
 
 const InputAndButton = styled.div`
